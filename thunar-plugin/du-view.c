@@ -33,6 +33,8 @@ static void
 du_view_dispose (GObject *object);
 static void
 du_view_finalize (GObject *object);
+static void
+du_view_map (GtkWidget *widget);
 
 
 
@@ -58,10 +60,13 @@ G_DEFINE_FINAL_TYPE (DuView, du_view, GTK_TYPE_BOX)
 static void
 du_view_class_init (DuViewClass *klass)
 {
-  GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+  GObjectClass   *gobject_class = G_OBJECT_CLASS (klass);
+  GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
   gobject_class->dispose = du_view_dispose;
   gobject_class->finalize = du_view_finalize;
+
+  widget_class->map = du_view_map;
 }
 
 
@@ -179,6 +184,21 @@ du_view_finalize (GObject *object)
 
 
 static void
+du_view_map (GtkWidget *widget)
+{
+  DuView *view = DU_VIEW (widget);
+
+  GTK_WIDGET_CLASS (du_view_parent_class)->map (widget);
+
+  /* the page is created with the properties dialog, but a scan only
+   * starts once the page is shown */
+  if (view->scan == NULL)
+    du_view_rescan (view);
+}
+
+
+
+static void
 du_view_update_status (DuView *view)
 {
   DuScanState state = du_scan_get_state (view->scan);
@@ -273,7 +293,8 @@ du_view_update (gpointer user_data)
  * @view : a #DuView.
  * @path : the folder to scan, in the file system encoding.
  *
- * Starts scanning @path and shows the result as it grows.
+ * Scans @path and shows the result as it grows. The scan starts once the
+ * view is shown.
  **/
 void
 du_view_set_path (DuView      *view,
@@ -282,13 +303,19 @@ du_view_set_path (DuView      *view,
   g_return_if_fail (DU_IS_VIEW (view));
   g_return_if_fail (path != NULL);
 
-  if (g_strcmp0 (view->path, path) == 0 && view->scan != NULL)
+  if (g_strcmp0 (view->path, path) == 0)
     return;
 
   g_free (view->path);
   view->path = g_strdup (path);
 
-  du_view_rescan (view);
+  if (gtk_widget_get_mapped (GTK_WIDGET (view)))
+    du_view_rescan (view);
+  else
+    {
+      du_view_stop (view);
+      du_chart_set_scan (DU_CHART (view->chart), NULL);
+    }
 }
 
 
