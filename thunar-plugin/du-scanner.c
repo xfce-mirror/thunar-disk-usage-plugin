@@ -183,25 +183,29 @@ du_node_resort (DuNode *node)
 
 
 
-/* add @bytes and @items to @node and, if it is shared, to its ancestors;
- * a shared node is changed under the lock only */
+/* add @bytes and @items to @node and, if it is shared, to its ancestors,
+ * and @files_bytes to the files of @node; a shared node is changed under
+ * the lock only */
 static void
 du_walk_add (DuScan  *scan,
              DuNode  *node,
              gboolean shared,
              guint64  bytes,
-             guint64  items)
+             guint64  items,
+             guint64  files_bytes)
 {
   DuNode *a;
 
   if (!shared)
     {
+      node->files_size += files_bytes;
       node->size += bytes;
       node->n_items += items;
       return;
     }
 
   g_mutex_lock (&scan->lock);
+  node->files_size += files_bytes;
   for (a = node; a != NULL; a = a->parent)
     {
       a->size += bytes;
@@ -297,8 +301,8 @@ du_walk_folder (DuWalk     *walk,
               g_mutex_lock (&scan->lock);
               du_node_insert_sorted (node, child);
               g_mutex_unlock (&scan->lock);
-              du_walk_add (scan, child, TRUE, bytes, 0);
-              du_walk_add (scan, node, TRUE, 0, 1);
+              du_walk_add (scan, child, TRUE, bytes, 0, 0);
+              du_walk_add (scan, node, TRUE, 0, 1, 0);
             }
           else
             child->size = bytes;
@@ -333,12 +337,12 @@ du_walk_folder (DuWalk     *walk,
               g_mutex_lock (&scan->lock);
               du_node_insert_sorted (node, child);
               g_mutex_unlock (&scan->lock);
-              du_walk_add (scan, node, TRUE, child->size, child->n_items + 1);
+              du_walk_add (scan, node, TRUE, child->size, child->n_items + 1, 0);
             }
           else
             {
               du_node_insert_sorted (node, child);
-              du_walk_add (scan, node, FALSE, child->size, child->n_items + 1);
+              du_walk_add (scan, node, FALSE, child->size, child->n_items + 1, 0);
             }
         }
       else
@@ -348,14 +352,7 @@ du_walk_folder (DuWalk     *walk,
             bytes = 0;
 
           scan->progress_bytes += bytes;
-
-          if (shared)
-            g_mutex_lock (&scan->lock);
-          node->files_size += bytes;
-          if (shared)
-            g_mutex_unlock (&scan->lock);
-
-          du_walk_add (scan, node, shared, bytes, 1);
+          du_walk_add (scan, node, shared, bytes, 1, bytes);
         }
     }
 
