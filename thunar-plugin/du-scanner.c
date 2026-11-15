@@ -364,31 +364,61 @@ du_walk_folder (DuWalk     *walk,
 
 
 
-static void
-du_scan_thread (GTask        *task,
-                gpointer      source_object,
-                gpointer      task_data,
-                GCancellable *cancellable)
+static gboolean
+du_scan_done (gpointer user_data)
 {
-  DuScan     *scan = task_data;
-  DuWalk      walk = { scan, 0, 0, NULL };
+  du_scan_unref (user_data);
+
+  return G_SOURCE_REMOVE;
+}
+
+
+
+static void
+du_scan_finish (DuScan      *scan,
+                DuScanState  state,
+                GError      *error)
+{
+  /* the UI polls both and stops once the state is no longer running, so
+   * the final generation must be visible by then */
+  g_atomic_int_inc (&scan->generation);
+
+  g_mutex_lock (&scan->lock);
+  scan->state = state;
+  scan->error = error;
+  g_mutex_unlock (&scan->lock);
+
+  /* drop the worker's reference in the main thread */
+  g_idle_add (du_scan_done, scan);
+}
+
+
+
+static gpointer
+du_scan_thread (gpointer data)
+{
+  DuScan       *scan = data;
+  DuWalk        walk = { scan, 0, 0, NULL };
+  DuAncestor    top;
   struct rlimit limit;
-  DuAncestor  top;
-  struct stat st;
-  DuNode     *root;
-  gint        fd;
-  gchar      *name;
+  struct stat   st;
+  DuNode       *root;
+  gint          fd;
+  gchar        *name;
 
   fd = open (scan->path, O_RDONLY | O_DIRECTORY | O_CLOEXEC);
   if (fd < 0 || fstat (fd, &st) != 0)
     {
-      gint errsv = errno;
+      gint   errsv = errno;
+      gchar *display = g_filename_display_name (scan->path);
 
       if (fd >= 0)
         close (fd);
-      g_task_return_new_error (task, G_IO_ERROR, g_io_error_from_errno (errsv),
-                               "%s: %s", scan->path, g_strerror (errsv));
-      return;
+      du_scan_finish (scan, DU_SCAN_FAILED,
+                      g_error_new (G_IO_ERROR, g_io_error_from_errno (errsv),
+                                   "%s: %s", display, g_strerror (errsv)));
+      g_free (display);
+      return NULL;
     }
 
   walk.dev = st.st_dev;
@@ -414,41 +444,12 @@ du_scan_thread (GTask        *task,
   if (walk.inodes != NULL)
     g_hash_table_destroy (walk.inodes);
 
-  g_atomic_int_inc (&scan->generation);
-
-  if (g_task_return_error_if_cancelled (task))
-    return;
-
-  g_task_return_boolean (task, TRUE);
-}
-
-
-
-static void
-du_scan_done (GObject      *source_object,
-              GAsyncResult *result,
-              gpointer      user_data)
-{
-  DuScan *scan = user_data;
-  GError *error = NULL;
-
-  g_mutex_lock (&scan->lock);
-  if (g_task_propagate_boolean (G_TASK (result), &error))
-    scan->state = DU_SCAN_DONE;
-  else if (g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
-    {
-      scan->state = DU_SCAN_CANCELLED;
-      g_clear_error (&error);
-    }
+  if (g_cancellable_is_cancelled (scan->cancellable))
+    du_scan_finish (scan, DU_SCAN_CANCELLED, NULL);
   else
-    {
-      scan->state = DU_SCAN_FAILED;
-      scan->error = error;
-    }
-  g_mutex_unlock (&scan->lock);
+    du_scan_finish (scan, DU_SCAN_DONE, NULL);
 
-  g_atomic_int_inc (&scan->generation);
-  du_scan_unref (scan);
+  return NULL;
 }
 
 
@@ -543,7 +544,7 @@ du_scan_get_error (DuScan *scan)
  * @scan        : an idle #DuScan.
  * @cancellable : a #GCancellable or %NULL.
  *
- * Starts the scan in a worker thread. The scan holds a reference on itself
+ * Starts the scan in a thread of its own. The scan holds a reference on itself
  * until the worker is done, so it may be unreffed (after du_scan_cancel())
  * while it runs.
  **/
@@ -551,19 +552,15 @@ void
 du_scan_start (DuScan       *scan,
                GCancellable *cancellable)
 {
-  GTask *task;
-
   g_return_if_fail (scan != NULL);
   g_return_if_fail (scan->state == DU_SCAN_IDLE);
 
   scan->cancellable = cancellable != NULL ? g_object_ref (cancellable) : g_cancellable_new ();
   scan->state = DU_SCAN_RUNNING;
 
-  task = g_task_new (NULL, scan->cancellable, du_scan_done, du_scan_ref (scan));
-  g_task_set_task_data (task, scan, NULL);
-  g_task_set_return_on_cancel (task, FALSE);
-  g_task_run_in_thread (task, du_scan_thread);
-  g_object_unref (task);
+  /* a thread of its own: a scan can take minutes and must not hold one of
+   * the threads that GIO shares with the rest of Thunar */
+  g_thread_unref (g_thread_new ("du-scan", du_scan_thread, du_scan_ref (scan)));
 }
 
 
