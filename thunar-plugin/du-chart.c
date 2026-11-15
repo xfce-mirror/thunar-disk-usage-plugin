@@ -533,6 +533,7 @@ du_chart_get_items (DuChart *chart)
   DuNode         *root;
   DuNode         *child;
   guint64         root_size;
+  gboolean        sorted;
   guint           n;
 
   /* the items are rebuilt; keep the highlight on the same folder */
@@ -545,6 +546,11 @@ du_chart_get_items (DuChart *chart)
 
   if (priv->scan == NULL)
     return;
+
+  /* the children of a folder are sorted by size once it is scanned; a
+   * folder still being scanned stays where it was inserted, empty, until
+   * then, so while the scan runs the order cannot be relied on */
+  sorted = du_scan_get_state (priv->scan) != DU_SCAN_RUNNING;
 
   /* the scanner thread adds and resorts the upper levels of the tree */
   du_scan_lock (priv->scan);
@@ -576,11 +582,15 @@ du_chart_get_items (DuChart *chart)
         {
           gdouble percent;
 
-          /* the children are sorted by size; anything below 0.1 % of the
-           * chart is too small to be drawn, and a folder with many
+          /* anything below 0.1 % of the chart is too small to be drawn;
+           * once sorted, the rest is smaller still, and a folder with many
            * thousands of sub folders should not slow down each redraw */
           if (child->size * 1000 < root_size)
-            break;
+            {
+              if (sorted)
+                break;
+              continue;
+            }
 
           percent = item->size > 0 ? 100.0 * child->size / item->size : 0;
           du_chart_add_item (chart, item->depth + 1, rel_start, percent, child, item);
