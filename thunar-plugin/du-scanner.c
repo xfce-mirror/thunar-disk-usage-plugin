@@ -430,6 +430,9 @@ du_scan_thread (gpointer data)
   root->size = (guint64) st.st_blocks * 512;
   g_free (name);
 
+  /* so that the total in the status line matches the chart */
+  scan->progress_bytes = root->size;
+
   g_mutex_lock (&scan->lock);
   scan->root = root;
   g_mutex_unlock (&scan->lock);
