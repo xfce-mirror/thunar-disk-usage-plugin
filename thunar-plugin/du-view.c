@@ -106,8 +106,11 @@ du_view_trash_item (DuChart *chart,
                                        GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
                                        _("Failed to move \"%s\" to the trash"), display);
       gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (dialog), "%s", error->message);
-      gtk_dialog_run (GTK_DIALOG (dialog));
-      gtk_widget_destroy (dialog);
+
+      /* no nested main loop: the parent may be closed meanwhile, and the
+       * dialog goes with it */
+      g_signal_connect (dialog, "response", G_CALLBACK (gtk_widget_destroy), NULL);
+      gtk_widget_show (dialog);
 
       g_free (display);
       g_error_free (error);
