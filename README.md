@@ -1,97 +1,60 @@
-# Thunar disk usage plugin
+[![License](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](https://gitlab.xfce.org/thunar-plugins/thunar-disk-usage-plugin/-/blob/master/COPYING)
 
-A Thunar plugin that shows what takes up the space in a folder, as a ring chart
-like the one in GNOME's Disk Usage Analyzer (Baobab):
+thunar-disk-usage-plugin
+========================
 
-- a **Disk Usage** tab in the *Properties* dialog of a folder;
-- **Show Disk Usage** (Ctrl+Alt+U) in the context menu of a folder and of the
-  folder background opens the same view in a window of its own.
+ The Thunar Disk Usage Plugin (thunar-disk-usage-plugin) shows what takes up the space in a folder, as a ring chart like the one in GNOME's Disk Usage Analyzer (Baobab).
 
-It can also be a button in the toolbar: *View → Configure Toolbar…*, tick
-**Show Disk Usage**. The button shows the current folder.
+It adds:
 
-Thunar's shortcut editor does not list the items of plugins. To change the
-shortcut, quit Thunar (`thunar -q`) and add a line to
-`~/.config/Thunar/accels.scm`, e.g. for Ctrl+Shift+D, or `""` for none:
+  * A "Disk Usage" page to the file properties dialog of a folder,
+  * A "Show Disk Usage" item (Ctrl+Alt+U) to the context menu of a folder and of the folder background, which opens the same view in a window of its own. It can also be added to the toolbar (View > Configure Toolbar).
 
-```
-(gtk_accel_path "<Actions>/ThunarActions/uca-action-tdu-show-disk-usage" "<Primary><Shift>d")
-```
+Each ring is one level of sub folders. A click on a segment opens that folder in the chart, a click into the middle goes back up. Sizes are the space used on the disk (like `du`), hard links are counted once, and the scan stays on the file system of the folder (like `du -x`).
 
-![Disk Usage tab](docs/thunar-disk-usage.png)
+----
 
-Each ring is one level of sub folders, up to five levels deep. The chart grows
-while the folder is scanned. Pointing at a segment shows the folder's name and
-size; a click opens the folder in the chart, a click into the middle goes back
-up, the scroll wheel shows more or fewer rings. The context menu of a segment
-opens the folder in Thunar, copies its path or moves it to the trash.
+### Changelog
 
-Sizes are the space used on the disk (like `du`), hard-linked files are counted
-once, and the scan stays on the file system of the folder (other mounts below it
-are skipped, like `du -x`). Folders that cannot be read are counted in the
-status line.
+See [NEWS](https://gitlab.xfce.org/thunar-plugins/thunar-disk-usage-plugin/-/blob/master/NEWS) for details on changes and fixes made in the current release.
 
-It works with the stock Thunar 4.18 and later; no Thunar package is replaced.
-Translated into German and Russian.
+### Source Code Repository
 
-## Install
+[Thunar-disk-usage-plugin source code](https://gitlab.xfce.org/thunar-plugins/thunar-disk-usage-plugin)
 
-Download the package for your system from
-[Releases](https://github.com/gtubolcev/thunar-disk-usage/releases/latest)
-(until the first release there: the releases of
-[xfce4-settings-theme-schedule](https://github.com/gtubolcev/xfce4-settings-theme-schedule/releases/latest), where
-the plugin lived before):
+### Download a Release Tarball
 
-| System | File |
-|---|---|
-| Xubuntu 26.04 | `thunar-disk-usage-plugin_*~resolute_amd64.deb` |
-| Xubuntu 24.04, Linux Mint 22 | `thunar-disk-usage-plugin_*~noble_amd64.deb` |
-| Debian 13 | `thunar-disk-usage-plugin_*~trixie_amd64.deb` |
-| Arch Linux, Manjaro, EndeavourOS | `thunar-disk-usage-plugin-*.pkg.tar.zst` |
+[Thunar-disk-usage-plugin archive](https://archive.xfce.org/src/thunar-plugins/thunar-disk-usage-plugin)
+    or
+[Thunar-disk-usage-plugin tags](https://gitlab.xfce.org/thunar-plugins/thunar-disk-usage-plugin/-/tags)
 
-```bash
-sudo apt install ./thunar-disk-usage-plugin_*.deb    # or: sudo pacman -U ./thunar-disk-usage-plugin-*.pkg.tar.zst
-thunar -q                                            # restart Thunar
-```
+### Installation
 
-On Ubuntu 26.04 and 24.04 it is also in the PPA, which keeps it updated:
+From source:
 
-```bash
-sudo add-apt-repository ppa:gtubolcev/xfce-patches
-sudo apt install thunar-disk-usage-plugin
-```
+    % cd thunar-disk-usage-plugin
+    % meson setup build
+    % meson compile -C build
+    % meson install -C build
 
-The PPA also holds the patched xfce4-settings with the theme schedule, which
-then replaces the stock one on the next upgrade.
+From release tarball:
 
-## Build
+    % tar xf thunar-disk-usage-plugin-<version>.tar.xz
+    % cd thunar-disk-usage-plugin-<version>
+    % meson setup build
+    % meson compile -C build
+    % meson install -C build
 
-```bash
-sudo apt install meson gettext libthunarx-3-dev libgtk-3-dev
-meson setup --prefix=/usr build && ninja -C build && sudo ninja -C build install
-thunar -q
-```
+`-Dtests=true` also builds `tests/du-scan-test` and `tests/du-view-test`, which run the scanner and the view without Thunar.
 
-`-Dtests=true` also builds `tests/du-scan-test PATH` (prints the scan, to
-compare with `du -sB1 -x PATH`) and `tests/du-view-test PATH` (the view in a
-window, without Thunar).
+### Uninstallation
 
-Packages: `scripts/build-deb.sh` (Ubuntu, Debian), `scripts/build-arch.sh`
-(Arch, from `arch/PKGBUILD`), `scripts/upload-ppa.sh` (the PPA). CI builds all of
-them on every push; a tag `vX.Y.Z` or `thunar-disk-usage-plugin-X.Y.Z` (as
-`xfce-do-release` names it) equal to the version in `debian/changelog` makes a
-release and uploads to the PPA.
+    % ninja uninstall -C build
 
-## Credits
+### Reporting Bugs
 
-The ring chart is ported to C and GTK 3 from `baobab-chart.vala` and
-`baobab-ringschart.vala` of [Baobab](https://gitlab.gnome.org/GNOME/baobab)
-49.1 (Copyright © 2006–2008 Igalia, © 2013 Stefano Facchini), GPL-2.0-or-later.
-The scanner, the view and the Thunar integration are new.
+Visit the [issues](https://gitlab.xfce.org/thunar-plugins/thunar-disk-usage-plugin/-/issues) page to view currently open bug reports and to report new bugs.
 
-The code was written with an AI assistant (Claude) and has not been reviewed by
-an Xfce developer.
+### Credits
 
-## License
-
-GPL-2.0-or-later, see [COPYING](COPYING).
+The ring chart is ported to C and GTK 3 from `baobab-chart.vala` and `baobab-ringschart.vala` of [Baobab](https://gitlab.gnome.org/GNOME/baobab) 49.1 (Copyright © 2006–2008 Igalia, © 2013 Stefano Facchini), GPL-2.0-or-later.
