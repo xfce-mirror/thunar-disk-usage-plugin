@@ -98,9 +98,6 @@ du_scan_get_root (DuScan *scan);
 gchar *
 du_node_get_path (DuScan *scan,
                   DuNode *node);
-DuNode *
-du_node_find (DuNode      *root,
-              const gchar *relative_path);
 
 G_END_DECLS
 

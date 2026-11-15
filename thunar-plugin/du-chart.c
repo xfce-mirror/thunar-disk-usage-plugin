@@ -931,18 +931,6 @@ du_chart_set_scan (DuChart *chart,
 
 
 
-DuScan *
-du_chart_get_scan (DuChart *chart)
-{
-  DuChartPrivate *priv = du_chart_get_instance_private (chart);
-
-  g_return_val_if_fail (DU_IS_CHART (chart), NULL);
-
-  return priv->scan;
-}
-
-
-
 /**
  * du_chart_set_root:
  * @chart : a #DuChart.

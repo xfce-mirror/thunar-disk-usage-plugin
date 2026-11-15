@@ -122,7 +122,6 @@ du_rings_chart_class_init (DuRingsChartClass *klass)
   chart_class->draw_item = du_rings_chart_draw_item;
   chart_class->calculate_item_geometry = du_rings_chart_calculate_item_geometry;
   chart_class->is_point_over_item = du_rings_chart_is_point_over_item;
-  chart_class->get_item_rectangle = du_rings_chart_get_item_rectangle;
   chart_class->can_zoom_in = du_rings_chart_can_zoom_in;
   chart_class->can_zoom_out = du_rings_chart_can_zoom_out;
 
@@ -512,7 +511,6 @@ du_rings_chart_calculate_item_geometry (DuChart     *chart,
 
       ringsitem->start_angle = parent->start_angle + parent->angle * item->rel_start / 100;
       ringsitem->continued = item->has_children && item->depth == max_depth;
-      item->parent->has_visible_children = TRUE;
     }
 
   item->visible = TRUE;

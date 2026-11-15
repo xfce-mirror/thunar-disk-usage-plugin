@@ -656,38 +656,3 @@ du_node_get_path (DuScan *scan,
 
   return path;
 }
-
-
-
-/**
- * du_node_find:
- * @root          : a node.
- * @relative_path : a path relative to @root, "" for @root itself.
- *
- * Returns: the node of @relative_path below @root, or %NULL.
- **/
-DuNode *
-du_node_find (DuNode      *root,
-              const gchar *relative_path)
-{
-  gchar **parts;
-  DuNode *node = root;
-  guint   n;
-
-  parts = g_strsplit (relative_path, G_DIR_SEPARATOR_S, -1);
-  for (n = 0; parts[n] != NULL && node != NULL; n++)
-    {
-      DuNode *child;
-
-      if (*parts[n] == '\0')
-        continue;
-
-      for (child = node->children; child != NULL; child = child->next)
-        if (strcmp (child->name, parts[n]) == 0)
-          break;
-      node = child;
-    }
-  g_strfreev (parts);
-
-  return node;
-}
