@@ -8,7 +8,7 @@ thunar-disk-usage-plugin
 It adds:
 
   * A "Disk Usage" page to the file properties dialog of a folder,
-  * A "Show Disk Usage" item (Ctrl+Alt+U) to the context menu of a folder and of the folder background, which opens the same view in a window of its own. It can also be added to the toolbar (View > Configure Toolbar).
+  * A "Show Disk Usage" item (Ctrl+Alt+U) to the context menu of a folder and of the folder background, which opens the same view in a window of its own.
 
 Each ring is one level of sub folders. A click on a segment opens that folder in the chart, a click into the middle goes back up. Sizes are the space used on the disk (like `du`), hard links are counted once, and the scan stays on the file system of the folder (like `du -x`).
 

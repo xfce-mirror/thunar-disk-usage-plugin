@@ -21,6 +21,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <string.h>
+#include <sys/resource.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -63,12 +64,27 @@ typedef struct
 {
   DuScan     *scan;
   dev_t       dev;
+  guint       max_depth;
   GHashTable *inodes;
 } DuWalk;
+
+/* the folders on the path from the root to the one being scanned */
+typedef struct _DuAncestor DuAncestor;
+struct _DuAncestor
+{
+  ino_t       ino;
+  DuAncestor *up;
+};
 
 /* subtrees up to this depth below the root are attached to the shared tree
  * as soon as they are complete */
 #define DU_PUBLISH_DEPTH 2
+
+/* each level keeps a directory open in Thunar's process, so the depth is
+ * limited to a quarter of the open files limit (256 for the usual 1024);
+ * deeper folders are counted as unreadable */
+#define DU_MIN_DEPTH_LIMIT 64
+#define DU_MAX_DEPTH_LIMIT 4096
 
 
 
@@ -167,25 +183,29 @@ du_node_resort (DuNode *node)
 
 
 
-/* add @bytes and @items to @node and, if it is shared, to its ancestors;
- * a shared node is changed under the lock only */
+/* add @bytes and @items to @node and, if it is shared, to its ancestors,
+ * and @files_bytes to the files of @node; a shared node is changed under
+ * the lock only */
 static void
 du_walk_add (DuScan  *scan,
              DuNode  *node,
              gboolean shared,
              guint64  bytes,
-             guint64  items)
+             guint64  items,
+             guint64  files_bytes)
 {
   DuNode *a;
 
   if (!shared)
     {
+      node->files_size += files_bytes;
       node->size += bytes;
       node->n_items += items;
       return;
     }
 
   g_mutex_lock (&scan->lock);
+  node->files_size += files_bytes;
   for (a = node; a != NULL; a = a->parent)
     {
       a->size += bytes;
@@ -198,18 +218,36 @@ du_walk_add (DuScan  *scan,
 
 
 
+/* TRUE if @ino is one of the folders on the path, e.g. when an ancestor
+ * is bind-mounted below itself on the same file system */
+static gboolean
+du_walk_is_ancestor (const DuAncestor *ancestors,
+                     ino_t             ino)
+{
+  for (; ancestors != NULL; ancestors = ancestors->up)
+    if (ancestors->ino == ino)
+      return TRUE;
+
+  return FALSE;
+}
+
+
+
 /*
  * Scans the folder @fd (owned; closed here) into @node, which is at @depth
- * below the root. @node->size already holds the folder's own blocks. If
- * @shared, @node is attached to the shared tree.
+ * below the root; @ancestors ends with @node itself. @node->size already
+ * holds the folder's own blocks. If @shared, @node is attached to the
+ * shared tree.
  */
 static void
-du_walk_folder (DuWalk  *walk,
-                DuNode  *node,
-                gint     fd,
-                guint    depth,
-                gboolean shared)
+du_walk_folder (DuWalk     *walk,
+                DuNode     *node,
+                gint        fd,
+                DuAncestor *ancestors,
+                guint       depth,
+                gboolean    shared)
 {
+  DuAncestor     self;
   DuScan        *scan = walk->scan;
   DIR           *dp;
   struct dirent *de;
@@ -248,6 +286,10 @@ du_walk_folder (DuWalk  *walk,
 
       if (S_ISDIR (st.st_mode))
         {
+          /* a directory cycle: do not walk into it again */
+          if (du_walk_is_ancestor (ancestors, st.st_ino))
+            continue;
+
           scan->progress_bytes += bytes;
 
           child = du_node_new (de->d_name, NULL);
@@ -259,15 +301,23 @@ du_walk_folder (DuWalk  *walk,
               g_mutex_lock (&scan->lock);
               du_node_insert_sorted (node, child);
               g_mutex_unlock (&scan->lock);
-              du_walk_add (scan, child, TRUE, bytes, 0);
-              du_walk_add (scan, node, TRUE, 0, 1);
+              du_walk_add (scan, child, TRUE, bytes, 0, 0);
+              du_walk_add (scan, node, TRUE, 0, 1, 0);
             }
           else
             child->size = bytes;
 
-          child_fd = openat (dirfd (dp), de->d_name, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+          if (depth + 1 < walk->max_depth)
+            child_fd = openat (dirfd (dp), de->d_name, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+          else
+            child_fd = -1;
+
           if (child_fd >= 0)
-            du_walk_folder (walk, child, child_fd, depth + 1, child_shared);
+            {
+              self.ino = st.st_ino;
+              self.up = ancestors;
+              du_walk_folder (walk, child, child_fd, &self, depth + 1, child_shared);
+            }
           else
             {
               child->unreadable = TRUE;
@@ -287,12 +337,12 @@ du_walk_folder (DuWalk  *walk,
               g_mutex_lock (&scan->lock);
               du_node_insert_sorted (node, child);
               g_mutex_unlock (&scan->lock);
-              du_walk_add (scan, node, TRUE, child->size, child->n_items + 1);
+              du_walk_add (scan, node, TRUE, child->size, child->n_items + 1, 0);
             }
           else
             {
               du_node_insert_sorted (node, child);
-              du_walk_add (scan, node, FALSE, child->size, child->n_items + 1);
+              du_walk_add (scan, node, FALSE, child->size, child->n_items + 1, 0);
             }
         }
       else
@@ -302,14 +352,7 @@ du_walk_folder (DuWalk  *walk,
             bytes = 0;
 
           scan->progress_bytes += bytes;
-
-          if (shared)
-            g_mutex_lock (&scan->lock);
-          node->files_size += bytes;
-          if (shared)
-            g_mutex_unlock (&scan->lock);
-
-          du_walk_add (scan, node, shared, bytes, 1);
+          du_walk_add (scan, node, shared, bytes, 1, bytes);
         }
     }
 
@@ -318,82 +361,95 @@ du_walk_folder (DuWalk  *walk,
 
 
 
-static void
-du_scan_thread (GTask        *task,
-                gpointer      source_object,
-                gpointer      task_data,
-                GCancellable *cancellable)
+static gboolean
+du_scan_done (gpointer user_data)
 {
-  DuScan     *scan = task_data;
-  DuWalk      walk = { scan, 0, NULL };
-  struct stat st;
-  DuNode     *root;
-  gint        fd;
-  gchar      *name;
+  du_scan_unref (user_data);
+
+  return G_SOURCE_REMOVE;
+}
+
+
+
+static void
+du_scan_finish (DuScan      *scan,
+                DuScanState  state,
+                GError      *error)
+{
+  /* the UI polls both and stops once the state is no longer running, so
+   * the final generation must be visible by then */
+  g_atomic_int_inc (&scan->generation);
+
+  g_mutex_lock (&scan->lock);
+  scan->state = state;
+  scan->error = error;
+  g_mutex_unlock (&scan->lock);
+
+  /* drop the worker's reference in the main thread */
+  g_idle_add (du_scan_done, scan);
+}
+
+
+
+static gpointer
+du_scan_thread (gpointer data)
+{
+  DuScan       *scan = data;
+  DuWalk        walk = { scan, 0, 0, NULL };
+  DuAncestor    top;
+  struct rlimit limit;
+  struct stat   st;
+  DuNode       *root;
+  gint          fd;
+  gchar        *name;
 
   fd = open (scan->path, O_RDONLY | O_DIRECTORY | O_CLOEXEC);
   if (fd < 0 || fstat (fd, &st) != 0)
     {
-      gint errsv = errno;
+      gint   errsv = errno;
+      gchar *display = g_filename_display_name (scan->path);
 
       if (fd >= 0)
         close (fd);
-      g_task_return_new_error (task, G_IO_ERROR, g_io_error_from_errno (errsv),
-                               "%s: %s", scan->path, g_strerror (errsv));
-      return;
+      du_scan_finish (scan, DU_SCAN_FAILED,
+                      g_error_new (G_IO_ERROR, g_io_error_from_errno (errsv),
+                                   "%s: %s", display, g_strerror (errsv)));
+      g_free (display);
+      return NULL;
     }
 
   walk.dev = st.st_dev;
+
+  if (getrlimit (RLIMIT_NOFILE, &limit) == 0 && limit.rlim_cur != RLIM_INFINITY)
+    walk.max_depth = CLAMP (limit.rlim_cur / 4, DU_MIN_DEPTH_LIMIT, DU_MAX_DEPTH_LIMIT);
+  else
+    walk.max_depth = DU_MAX_DEPTH_LIMIT;
 
   name = g_path_get_basename (scan->path);
   root = du_node_new (name, NULL);
   root->size = (guint64) st.st_blocks * 512;
   g_free (name);
 
+  /* so that the total in the status line matches the chart */
+  scan->progress_bytes = root->size;
+
   g_mutex_lock (&scan->lock);
   scan->root = root;
   g_mutex_unlock (&scan->lock);
 
-  du_walk_folder (&walk, root, fd, 0, TRUE);
+  top.ino = st.st_ino;
+  top.up = NULL;
+  du_walk_folder (&walk, root, fd, &top, 0, TRUE);
 
   if (walk.inodes != NULL)
     g_hash_table_destroy (walk.inodes);
 
-  g_atomic_int_inc (&scan->generation);
-
-  if (g_task_return_error_if_cancelled (task))
-    return;
-
-  g_task_return_boolean (task, TRUE);
-}
-
-
-
-static void
-du_scan_done (GObject      *source_object,
-              GAsyncResult *result,
-              gpointer      user_data)
-{
-  DuScan *scan = user_data;
-  GError *error = NULL;
-
-  g_mutex_lock (&scan->lock);
-  if (g_task_propagate_boolean (G_TASK (result), &error))
-    scan->state = DU_SCAN_DONE;
-  else if (g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
-    {
-      scan->state = DU_SCAN_CANCELLED;
-      g_clear_error (&error);
-    }
+  if (g_cancellable_is_cancelled (scan->cancellable))
+    du_scan_finish (scan, DU_SCAN_CANCELLED, NULL);
   else
-    {
-      scan->state = DU_SCAN_FAILED;
-      scan->error = error;
-    }
-  g_mutex_unlock (&scan->lock);
+    du_scan_finish (scan, DU_SCAN_DONE, NULL);
 
-  g_atomic_int_inc (&scan->generation);
-  du_scan_unref (scan);
+  return NULL;
 }
 
 
@@ -488,7 +544,7 @@ du_scan_get_error (DuScan *scan)
  * @scan        : an idle #DuScan.
  * @cancellable : a #GCancellable or %NULL.
  *
- * Starts the scan in a worker thread. The scan holds a reference on itself
+ * Starts the scan in a thread of its own. The scan holds a reference on itself
  * until the worker is done, so it may be unreffed (after du_scan_cancel())
  * while it runs.
  **/
@@ -496,19 +552,15 @@ void
 du_scan_start (DuScan       *scan,
                GCancellable *cancellable)
 {
-  GTask *task;
-
   g_return_if_fail (scan != NULL);
   g_return_if_fail (scan->state == DU_SCAN_IDLE);
 
   scan->cancellable = cancellable != NULL ? g_object_ref (cancellable) : g_cancellable_new ();
   scan->state = DU_SCAN_RUNNING;
 
-  task = g_task_new (NULL, scan->cancellable, du_scan_done, du_scan_ref (scan));
-  g_task_set_task_data (task, scan, NULL);
-  g_task_set_return_on_cancel (task, FALSE);
-  g_task_run_in_thread (task, du_scan_thread);
-  g_object_unref (task);
+  /* a thread of its own: a scan can take minutes and must not hold one of
+   * the threads that GIO shares with the rest of Thunar */
+  g_thread_unref (g_thread_new ("du-scan", du_scan_thread, du_scan_ref (scan)));
 }
 
 
@@ -603,39 +655,4 @@ du_node_get_path (DuScan *scan,
   g_ptr_array_free (parts, TRUE);
 
   return path;
-}
-
-
-
-/**
- * du_node_find:
- * @root          : a node.
- * @relative_path : a path relative to @root, "" for @root itself.
- *
- * Returns: the node of @relative_path below @root, or %NULL.
- **/
-DuNode *
-du_node_find (DuNode      *root,
-              const gchar *relative_path)
-{
-  gchar **parts;
-  DuNode *node = root;
-  guint   n;
-
-  parts = g_strsplit (relative_path, G_DIR_SEPARATOR_S, -1);
-  for (n = 0; parts[n] != NULL && node != NULL; n++)
-    {
-      DuNode *child;
-
-      if (*parts[n] == '\0')
-        continue;
-
-      for (child = node->children; child != NULL; child = child->next)
-        if (strcmp (child->name, parts[n]) == 0)
-          break;
-      node = child;
-    }
-  g_strfreev (parts);
-
-  return node;
 }

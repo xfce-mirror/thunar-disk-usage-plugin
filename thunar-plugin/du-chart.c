@@ -82,6 +82,9 @@ typedef struct
   GtkWidget *zoom_out_item;
   DuNode    *popover_node;
 
+  /* smooth scrolling (touchpads) sent since the last zoom step */
+  gdouble scroll_delta;
+
   GdkRGBA chart_colors[NUM_COLORS];
 } DuChartPrivate;
 
@@ -533,6 +536,7 @@ du_chart_get_items (DuChart *chart)
   DuNode         *root;
   DuNode         *child;
   guint64         root_size;
+  gboolean        sorted;
   guint           n;
 
   /* the items are rebuilt; keep the highlight on the same folder */
@@ -545,6 +549,11 @@ du_chart_get_items (DuChart *chart)
 
   if (priv->scan == NULL)
     return;
+
+  /* the children of a folder are sorted by size once it is scanned; a
+   * folder still being scanned stays where it was inserted, empty, until
+   * then, so while the scan runs the order cannot be relied on */
+  sorted = du_scan_get_state (priv->scan) != DU_SCAN_RUNNING;
 
   /* the scanner thread adds and resorts the upper levels of the tree */
   du_scan_lock (priv->scan);
@@ -576,11 +585,15 @@ du_chart_get_items (DuChart *chart)
         {
           gdouble percent;
 
-          /* the children are sorted by size; anything below 0.1 % of the
-           * chart is too small to be drawn, and a folder with many
+          /* anything below 0.1 % of the chart is too small to be drawn;
+           * once sorted, the rest is smaller still, and a folder with many
            * thousands of sub folders should not slow down each redraw */
           if (child->size * 1000 < root_size)
-            break;
+            {
+              if (sorted)
+                break;
+              continue;
+            }
 
           percent = item->size > 0 ? 100.0 * child->size / item->size : 0;
           du_chart_add_item (chart, item->depth + 1, rel_start, percent, child, item);
@@ -736,48 +749,47 @@ static gboolean
 du_chart_scroll_event (GtkWidget      *widget,
                        GdkEventScroll *event)
 {
-  DuChart *chart = DU_CHART (widget);
-  gdouble  dx = 0;
-  gdouble  dy = 0;
+  DuChart        *chart = DU_CHART (widget);
+  DuChartPrivate *priv = du_chart_get_instance_private (chart);
+  gdouble         dx = 0;
+  gdouble         dy = 0;
 
   switch (event->direction)
     {
     case GDK_SCROLL_UP:
-      dy = -1;
-      break;
+    case GDK_SCROLL_RIGHT:
+      du_chart_zoom_out (chart);
+      return TRUE;
 
     case GDK_SCROLL_DOWN:
-      dy = 1;
-      break;
-
     case GDK_SCROLL_LEFT:
-      dx = -1;
-      break;
-
-    case GDK_SCROLL_RIGHT:
-      dx = 1;
-      break;
+      du_chart_zoom_in (chart);
+      return TRUE;
 
     case GDK_SCROLL_SMOOTH:
       gdk_event_get_scroll_deltas ((GdkEvent *) event, &dx, &dy);
       break;
+
+    default:
+      return FALSE;
     }
 
-  /* up or to the left */
-  if (dx > 0.0 || dy < 0.0)
+  /* a touchpad sends many small deltas; one step per unit, like a wheel
+   * click. Up or to the right zooms out, down or to the left zooms in. */
+  priv->scroll_delta += dy - dx;
+
+  if (priv->scroll_delta <= -1.0)
     {
+      priv->scroll_delta = 0;
       du_chart_zoom_out (chart);
-      return TRUE;
     }
-
-  /* down or to the right */
-  if (dx < 0.0 || dy > 0.0)
+  else if (priv->scroll_delta >= 1.0)
     {
+      priv->scroll_delta = 0;
       du_chart_zoom_in (chart);
-      return TRUE;
     }
 
-  return FALSE;
+  return TRUE;
 }
 
 
@@ -915,18 +927,6 @@ du_chart_set_scan (DuChart *chart,
   g_object_notify_by_pspec (G_OBJECT (chart), properties[PROP_ROOT]);
   g_object_notify_by_pspec (G_OBJECT (chart), properties[PROP_HIGHLIGHTED_ITEM]);
   gtk_widget_queue_draw (GTK_WIDGET (chart));
-}
-
-
-
-DuScan *
-du_chart_get_scan (DuChart *chart)
-{
-  DuChartPrivate *priv = du_chart_get_instance_private (chart);
-
-  g_return_val_if_fail (DU_IS_CHART (chart), NULL);
-
-  return priv->scan;
 }
 
 

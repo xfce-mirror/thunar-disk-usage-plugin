@@ -50,6 +50,7 @@ main (int    argc,
 {
   GMainContext *context;
   DuScan       *scan;
+  guint64       bytes;
   guint64       items;
   guint         n_unreadable;
   guint         max_depth;
@@ -79,8 +80,9 @@ main (int    argc,
   print_node (scan, du_scan_get_root (scan), 0, max_depth);
   du_scan_unlock (scan);
 
-  du_scan_get_progress (scan, NULL, &items, &n_unreadable);
-  g_printerr ("%" G_GUINT64_FORMAT " items, %u unreadable folders\n", items, n_unreadable);
+  du_scan_get_progress (scan, &bytes, &items, &n_unreadable);
+  g_printerr ("%" G_GUINT64_FORMAT " bytes in %" G_GUINT64_FORMAT " items, %u unreadable folders\n",
+              bytes, items, n_unreadable);
 
   du_scan_unref (scan);
   return 0;

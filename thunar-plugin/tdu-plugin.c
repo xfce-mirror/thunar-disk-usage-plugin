@@ -36,6 +36,7 @@ thunar_extension_list_types (const GType **types,
 
 
 static GType type_list[1];
+static gint  n_type_list = 0;
 
 
 
@@ -71,6 +72,7 @@ thunar_extension_initialize (ThunarxProviderPlugin *plugin)
 
   /* setup the plugin provider type list */
   type_list[0] = TDU_TYPE_PROVIDER;
+  n_type_list = G_N_ELEMENTS (type_list);
 }
 
 
@@ -88,5 +90,6 @@ thunar_extension_list_types (const GType **types,
                              gint         *n_types)
 {
   *types = type_list;
-  *n_types = G_N_ELEMENTS (type_list);
+  /* nothing, if initialization failed */
+  *n_types = n_type_list;
 }

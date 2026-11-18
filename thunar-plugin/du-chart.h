@@ -43,7 +43,6 @@ typedef struct _DuChartItem DuChartItem;
  * @rel_start            : start within the parent, in percent.
  * @rel_size             : size relative to the parent, in percent.
  * @visible              : the item is large enough to be drawn.
- * @has_visible_children : at least one child is drawn.
  * @rect                 : the bounding box, for tooltips.
  * @parent               : the item of the parent folder, %NULL for the root.
  *
@@ -59,7 +58,6 @@ struct _DuChartItem
   gdouble      rel_start;
   gdouble      rel_size;
   gboolean     visible;
-  gboolean     has_visible_children;
   GdkRectangle rect;
   DuChartItem *parent;
 };
@@ -86,8 +84,6 @@ struct _DuChartClass
                                   DuChartItem *item,
                                   gdouble      x,
                                   gdouble      y);
-  void (*get_item_rectangle) (DuChart     *chart,
-                              DuChartItem *item);
   gboolean (*can_zoom_in) (DuChart *chart);
   gboolean (*can_zoom_out) (DuChart *chart);
 
@@ -101,8 +97,6 @@ struct _DuChartClass
 void
 du_chart_set_scan (DuChart *chart,
                    DuScan  *scan);
-DuScan *
-du_chart_get_scan (DuChart *chart);
 
 void
 du_chart_set_root (DuChart *chart,

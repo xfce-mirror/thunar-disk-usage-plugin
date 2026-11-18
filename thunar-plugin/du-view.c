@@ -33,6 +33,8 @@ static void
 du_view_dispose (GObject *object);
 static void
 du_view_finalize (GObject *object);
+static void
+du_view_map (GtkWidget *widget);
 
 
 
@@ -58,10 +60,13 @@ G_DEFINE_FINAL_TYPE (DuView, du_view, GTK_TYPE_BOX)
 static void
 du_view_class_init (DuViewClass *klass)
 {
-  GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+  GObjectClass   *gobject_class = G_OBJECT_CLASS (klass);
+  GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
   gobject_class->dispose = du_view_dispose;
   gobject_class->finalize = du_view_finalize;
+
+  widget_class->map = du_view_map;
 }
 
 
@@ -101,8 +106,11 @@ du_view_trash_item (DuChart *chart,
                                        GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
                                        _("Failed to move \"%s\" to the trash"), display);
       gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (dialog), "%s", error->message);
-      gtk_dialog_run (GTK_DIALOG (dialog));
-      gtk_widget_destroy (dialog);
+
+      /* no nested main loop: the parent may be closed meanwhile, and the
+       * dialog goes with it */
+      g_signal_connect (dialog, "response", G_CALLBACK (gtk_widget_destroy), NULL);
+      gtk_widget_show (dialog);
 
       g_free (display);
       g_error_free (error);
@@ -174,6 +182,21 @@ du_view_finalize (GObject *object)
   g_free (DU_VIEW (object)->path);
 
   G_OBJECT_CLASS (du_view_parent_class)->finalize (object);
+}
+
+
+
+static void
+du_view_map (GtkWidget *widget)
+{
+  DuView *view = DU_VIEW (widget);
+
+  GTK_WIDGET_CLASS (du_view_parent_class)->map (widget);
+
+  /* the page is created with the properties dialog, but a scan only
+   * starts once the page is shown */
+  if (view->scan == NULL)
+    du_view_rescan (view);
 }
 
 
@@ -273,7 +296,8 @@ du_view_update (gpointer user_data)
  * @view : a #DuView.
  * @path : the folder to scan, in the file system encoding.
  *
- * Starts scanning @path and shows the result as it grows.
+ * Scans @path and shows the result as it grows. The scan starts once the
+ * view is shown.
  **/
 void
 du_view_set_path (DuView      *view,
@@ -282,13 +306,19 @@ du_view_set_path (DuView      *view,
   g_return_if_fail (DU_IS_VIEW (view));
   g_return_if_fail (path != NULL);
 
-  if (g_strcmp0 (view->path, path) == 0 && view->scan != NULL)
+  if (g_strcmp0 (view->path, path) == 0)
     return;
 
   g_free (view->path);
   view->path = g_strdup (path);
 
-  du_view_rescan (view);
+  if (gtk_widget_get_mapped (GTK_WIDGET (view)))
+    du_view_rescan (view);
+  else
+    {
+      du_view_stop (view);
+      du_chart_set_scan (DU_CHART (view->chart), NULL);
+    }
 }
 
 
