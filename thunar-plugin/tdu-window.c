@@ -118,7 +118,7 @@ tdu_window_show (GFile     *location,
 {
   TduWindow *window;
   GList     *lp;
-  gchar     *name;
+  gchar     *folder_name;
   gchar     *path;
   gchar     *text;
 
@@ -144,14 +144,14 @@ tdu_window_show (GFile     *location,
 
   /* folder names need not be valid UTF-8 */
   if (path != NULL)
-    name = g_filename_display_basename (path);
+    folder_name = g_filename_display_basename (path);
   else
-    name = g_file_get_parse_name (location);
+    folder_name = g_file_get_parse_name (location);
   /* TRANSLATORS: window title, %s is the folder name */
-  text = g_strdup_printf (_("Disk Usage — %s"), name);
+  text = g_strdup_printf (_("Disk Usage — %s"), folder_name);
   gtk_window_set_title (GTK_WINDOW (window), text);
   g_free (text);
-  g_free (name);
+  g_free (folder_name);
 
   if (path != NULL)
     du_view_set_path (DU_VIEW (window->view), path);
