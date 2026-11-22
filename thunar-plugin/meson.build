@@ -31,5 +31,5 @@ shared_module(
   ],
   name_prefix: '',
   install: true,
-  install_dir: extensionsdir,
+  install_dir: get_option('prefix') / get_option('libdir') / 'thunarx-3',
 )

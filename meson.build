@@ -26,13 +26,6 @@ gtk = dependency('gtk+-3.0', version: dependency_versions['gtk'])
 thunarx = dependency('thunarx-3', version: dependency_versions['xfce4'])
 libm = cc.find_library('m', required: true)
 
-# the extensions directory of thunarx, but below our own prefix (e.g. for a
-# local test install), not the system's one
-extensionsdir = thunarx.get_variable(
-  pkgconfig: 'extensionsdir',
-  pkgconfig_define: ['libdir', get_option('prefix') / get_option('libdir')],
-)
-
 extra_cflags = []
 extra_cflags_check = [
   '-Wmissing-declarations',
