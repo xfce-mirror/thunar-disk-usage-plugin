@@ -24,7 +24,7 @@ glib = dependency('glib-2.0', version: dependency_versions['glib'])
 gio = dependency('gio-2.0', version: dependency_versions['glib'])
 gtk = dependency('gtk+-3.0', version: dependency_versions['gtk'])
 thunarx = dependency('thunarx-3', version: dependency_versions['xfce4'])
-libm = cc.find_library('m', required: false)
+libm = cc.find_library('m', required: true)
 
 # the extensions directory of thunarx, but below our own prefix (e.g. for a
 # local test install), not the system's one
