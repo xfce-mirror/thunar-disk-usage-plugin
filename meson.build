@@ -11,7 +11,6 @@ project_namespace = 'thunar-plugins'
 copyright_year = '2026'
 
 cc = meson.get_compiler('c')
-gnome = import('gnome')
 i18n = import('i18n')
 
 dependency_versions = {
@@ -103,5 +102,3 @@ subdir('thunar-plugin')
 if get_option('tests')
   subdir('tests')
 endif
-
-gnome.post_install(gtk_update_icon_cache: true)
