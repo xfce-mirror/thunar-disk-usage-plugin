@@ -1,0 +1,93 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Xfce
+# This file is distributed under the same license as the thunar-plugins.thunar-disk-usage-plugin package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# 
+# Translators:
+# Alejandro Simón <alejandrosimon@disroot.org>, 2026
+# 
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: thunar-plugins.thunar-disk-usage-plugin\n"
+"Report-Msgid-Bugs-To: https://gitlab.xfce.org/\n"
+"POT-Creation-Date: 2026-11-24 11:35+0100\n"
+"PO-Revision-Date: 2026-11-24 10:28+0000\n"
+"Last-Translator: Alejandro Simón <alejandrosimon@disroot.org>, 2026\n"
+"Language-Team: Spanish (https://app.transifex.com/xfce/teams/16840/es/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: es\n"
+"Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;\n"
+
+#: thunar-plugin/du-chart.c:341
+msgid "_Open Folder"
+msgstr "Abrir carpeta"
+
+#: thunar-plugin/du-chart.c:342
+msgid "_Copy Path to Clipboard"
+msgstr "_Copiar la ruta al portapapeles"
+
+#: thunar-plugin/du-chart.c:343
+msgid "Mo_ve to Trash"
+msgstr "Mo_ver a la Papelera"
+
+#: thunar-plugin/du-chart.c:349
+msgid "Go to _Parent Folder"
+msgstr "Ir a la carpeta su_perior"
+
+#: thunar-plugin/du-chart.c:350
+msgid "Zoom _In"
+msgstr "_Incrementar Zoom"
+
+#: thunar-plugin/du-chart.c:351
+msgid "Zoom _Out"
+msgstr "Disminuir Z_oom"
+
+#: thunar-plugin/du-view.c:107
+#, c-format
+msgid "Failed to move \"%s\" to the trash"
+msgstr "Error al mover \"%s\" a la papelera"
+
+#: thunar-plugin/du-view.c:223
+#, c-format
+msgid "%u folder could not be read"
+msgid_plural "%u folders could not be read"
+msgstr[0] "No puede leerse %u carpeta"
+msgstr[1] "No pueden leerse %u carpetas"
+msgstr[2] "No pueden leerse %u carpetas"
+
+#: thunar-plugin/du-view.c:238
+#, c-format
+msgid "Scanning… %s in %s item"
+msgid_plural "Scanning… %s in %s items"
+msgstr[0] "Escaneando… %s de %s item"
+msgstr[1] "Escaneando... %s de %s items"
+msgstr[2] "Escaneando...  %s de %s items"
+
+#: thunar-plugin/du-view.c:246
+#, c-format
+msgid "%s in %s item"
+msgid_plural "%s in %s items"
+msgstr[0] "%s de %s ítem"
+msgstr[1] "%s de %s ítems"
+msgstr[2] "%s de %s ítems"
+
+#: thunar-plugin/tdu-page.c:213
+msgid "Disk Usage"
+msgstr "Uso del disco"
+
+#: thunar-plugin/tdu-provider.c:171
+msgid "Show _Disk Usage"
+msgstr "Mostrar uso del _Disco"
+
+#: thunar-plugin/tdu-provider.c:172
+msgid "Show what takes up the space in this folder"
+msgstr "Muestra qué es lo que ocupa espacio en esta carpeta"
+
+#. TRANSLATORS: window title, %s is the folder name
+#: thunar-plugin/tdu-window.c:151
+#, c-format
+msgid "Disk Usage — %s"
+msgstr "Uso del Disco — %s"
