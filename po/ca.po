@@ -1,0 +1,90 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Xfce
+# This file is distributed under the same license as the thunar-plugins.thunar-disk-usage-plugin package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# 
+# Translators:
+# Davidmp <medipas@gmail.com>, 2026
+# 
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: thunar-plugins.thunar-disk-usage-plugin\n"
+"Report-Msgid-Bugs-To: https://gitlab.xfce.org/\n"
+"POT-Creation-Date: 2026-11-24 11:35+0100\n"
+"PO-Revision-Date: 2026-11-24 10:28+0000\n"
+"Last-Translator: Davidmp <medipas@gmail.com>, 2026\n"
+"Language-Team: Catalan (https://app.transifex.com/xfce/teams/16840/ca/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ca\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: thunar-plugin/du-chart.c:341
+msgid "_Open Folder"
+msgstr "_Obre la carpeta"
+
+#: thunar-plugin/du-chart.c:342
+msgid "_Copy Path to Clipboard"
+msgstr "_Copia el camí al porta-retalls"
+
+#: thunar-plugin/du-chart.c:343
+msgid "Mo_ve to Trash"
+msgstr "Mo_u a la paperera"
+
+#: thunar-plugin/du-chart.c:349
+msgid "Go to _Parent Folder"
+msgstr "Ves a la carpeta su_perior"
+
+#: thunar-plugin/du-chart.c:350
+msgid "Zoom _In"
+msgstr "Ampl_ia"
+
+#: thunar-plugin/du-chart.c:351
+msgid "Zoom _Out"
+msgstr "_Redueix"
+
+#: thunar-plugin/du-view.c:107
+#, c-format
+msgid "Failed to move \"%s\" to the trash"
+msgstr "No s'ha pogut moure %s a la paperera."
+
+#: thunar-plugin/du-view.c:223
+#, c-format
+msgid "%u folder could not be read"
+msgid_plural "%u folders could not be read"
+msgstr[0] "%u carpeta no s'ha pogut llegir."
+msgstr[1] "%u carpetes no s'han pogut llegir."
+
+#: thunar-plugin/du-view.c:238
+#, c-format
+msgid "Scanning… %s in %s item"
+msgid_plural "Scanning… %s in %s items"
+msgstr[0] "S'explora… %s en %s element"
+msgstr[1] "S'explora… %s en %s elements"
+
+#: thunar-plugin/du-view.c:246
+#, c-format
+msgid "%s in %s item"
+msgid_plural "%s in %s items"
+msgstr[0] "%s en %s element"
+msgstr[1] "%s en %s elements"
+
+#: thunar-plugin/tdu-page.c:213
+msgid "Disk Usage"
+msgstr "Ús del disc"
+
+#: thunar-plugin/tdu-provider.c:171
+msgid "Show _Disk Usage"
+msgstr "Mostra l'ús del _disc"
+
+#: thunar-plugin/tdu-provider.c:172
+msgid "Show what takes up the space in this folder"
+msgstr "Mostra què ocupa espai en aquesta carpeta"
+
+#. TRANSLATORS: window title, %s is the folder name
+#: thunar-plugin/tdu-window.c:151
+#, c-format
+msgid "Disk Usage — %s"
+msgstr "Ús del disc — %s"
