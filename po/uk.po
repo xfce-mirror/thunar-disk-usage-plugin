@@ -1,0 +1,96 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Xfce
+# This file is distributed under the same license as the thunar-plugins.thunar-disk-usage-plugin package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# 
+# Translators:
+# Gordon Freeman, 2026
+# 
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: thunar-plugins.thunar-disk-usage-plugin\n"
+"Report-Msgid-Bugs-To: https://gitlab.xfce.org/\n"
+"POT-Creation-Date: 2026-11-24 11:35+0100\n"
+"PO-Revision-Date: 2026-11-24 10:28+0000\n"
+"Last-Translator: Gordon Freeman, 2026\n"
+"Language-Team: Ukrainian (https://app.transifex.com/xfce/teams/16840/uk/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: uk\n"
+"Plural-Forms: nplurals=4; plural=(n % 1 == 0 && n % 10 == 1 && n % 100 != 11 ? 0 : n % 1 == 0 && n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? 1 : n % 1 == 0 && (n % 10 ==0 || (n % 10 >=5 && n % 10 <=9) || (n % 100 >=11 && n % 100 <=14 )) ? 2: 3);\n"
+
+#: thunar-plugin/du-chart.c:341
+msgid "_Open Folder"
+msgstr "Від_крити теку"
+
+#: thunar-plugin/du-chart.c:342
+msgid "_Copy Path to Clipboard"
+msgstr "Копіювати _шлях у буфер обміну"
+
+#: thunar-plugin/du-chart.c:343
+msgid "Mo_ve to Trash"
+msgstr "_Перемістити до кошика"
+
+#: thunar-plugin/du-chart.c:349
+msgid "Go to _Parent Folder"
+msgstr "Перейти до ба_тьківської теки"
+
+#: thunar-plugin/du-chart.c:350
+msgid "Zoom _In"
+msgstr "На_близити"
+
+#: thunar-plugin/du-chart.c:351
+msgid "Zoom _Out"
+msgstr "Від_далити"
+
+#: thunar-plugin/du-view.c:107
+#, c-format
+msgid "Failed to move \"%s\" to the trash"
+msgstr "Не вдалося перемістити \"%s\" до кошика"
+
+#: thunar-plugin/du-view.c:223
+#, c-format
+msgid "%u folder could not be read"
+msgid_plural "%u folders could not be read"
+msgstr[0] "%u теку не вдалося прочитати"
+msgstr[1] "%u теки не вдалося прочитати"
+msgstr[2] "%u тек не вдалося прочитати"
+msgstr[3] "%u тек не вдалося прочитати"
+
+#: thunar-plugin/du-view.c:238
+#, c-format
+msgid "Scanning… %s in %s item"
+msgid_plural "Scanning… %s in %s items"
+msgstr[0] "Сканування… %s з %s елемента"
+msgstr[1] "Сканування… %s з %s елементи"
+msgstr[2] "Сканування… %s з %s елементів"
+msgstr[3] "Сканування… %s з %s елементів"
+
+#: thunar-plugin/du-view.c:246
+#, c-format
+msgid "%s in %s item"
+msgid_plural "%s in %s items"
+msgstr[0] "%s з %s елемента"
+msgstr[1] "%s з %s елементи"
+msgstr[2] "%s з %s елементів"
+msgstr[3] "%s з %s елементів"
+
+#: thunar-plugin/tdu-page.c:213
+msgid "Disk Usage"
+msgstr "Використання диску"
+
+#: thunar-plugin/tdu-provider.c:171
+msgid "Show _Disk Usage"
+msgstr "Показати _використання диску"
+
+#: thunar-plugin/tdu-provider.c:172
+msgid "Show what takes up the space in this folder"
+msgstr "Показати, що саме займає місце в цій теці"
+
+#. TRANSLATORS: window title, %s is the folder name
+#: thunar-plugin/tdu-window.c:151
+#, c-format
+msgid "Disk Usage — %s"
+msgstr "Використання диску — %s"
