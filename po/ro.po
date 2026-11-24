@@ -1,0 +1,93 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Xfce
+# This file is distributed under the same license as the thunar-plugins.thunar-disk-usage-plugin package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# 
+# Translators:
+# Remus-Gabriel Chelu <remusgabriel.chelu@disroot.org>, 2026
+# 
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: thunar-plugins.thunar-disk-usage-plugin\n"
+"Report-Msgid-Bugs-To: https://gitlab.xfce.org/\n"
+"POT-Creation-Date: 2026-11-24 11:35+0100\n"
+"PO-Revision-Date: 2026-11-24 10:28+0000\n"
+"Last-Translator: Remus-Gabriel Chelu <remusgabriel.chelu@disroot.org>, 2026\n"
+"Language-Team: Romanian (https://app.transifex.com/xfce/teams/16840/ro/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ro\n"
+"Plural-Forms: nplurals=3; plural=(n==1?0:(((n%100>19)||((n%100==0)&&(n!=0)))?2:1));\n"
+
+#: thunar-plugin/du-chart.c:341
+msgid "_Open Folder"
+msgstr "Deschide d_osarul"
+
+#: thunar-plugin/du-chart.c:342
+msgid "_Copy Path to Clipboard"
+msgstr "_Copiază ruta în clipboard"
+
+#: thunar-plugin/du-chart.c:343
+msgid "Mo_ve to Trash"
+msgstr "M_ută în coșul de gunoi"
+
+#: thunar-plugin/du-chart.c:349
+msgid "Go to _Parent Folder"
+msgstr "Accesează dosarul _părinte"
+
+#: thunar-plugin/du-chart.c:350
+msgid "Zoom _In"
+msgstr "Măr_ire"
+
+#: thunar-plugin/du-chart.c:351
+msgid "Zoom _Out"
+msgstr "Micș_orare"
+
+#: thunar-plugin/du-view.c:107
+#, c-format
+msgid "Failed to move \"%s\" to the trash"
+msgstr "Nu s-a putut muta „%s” în coșul de gunoi"
+
+#: thunar-plugin/du-view.c:223
+#, c-format
+msgid "%u folder could not be read"
+msgid_plural "%u folders could not be read"
+msgstr[0] "%u dosar nu a putut fi citit"
+msgstr[1] "%u dosare nu au putut fi citite"
+msgstr[2] "%u de dosare nu au putut fi citite"
+
+#: thunar-plugin/du-view.c:238
+#, c-format
+msgid "Scanning… %s in %s item"
+msgid_plural "Scanning… %s in %s items"
+msgstr[0] "Se scanează… %s din %s element"
+msgstr[1] "Se scanează… %s din %s elemente"
+msgstr[2] "Se scanează… %s din %s de elemente"
+
+#: thunar-plugin/du-view.c:246
+#, c-format
+msgid "%s in %s item"
+msgid_plural "%s in %s items"
+msgstr[0] "%s din %s element"
+msgstr[1] "%s din %s elemente"
+msgstr[2] "%s din %s de elemente"
+
+#: thunar-plugin/tdu-page.c:213
+msgid "Disk Usage"
+msgstr "Utilizarea spațiului pe disc"
+
+#: thunar-plugin/tdu-provider.c:171
+msgid "Show _Disk Usage"
+msgstr "Afișează utilizarea spațiului pe _disc"
+
+#: thunar-plugin/tdu-provider.c:172
+msgid "Show what takes up the space in this folder"
+msgstr "Arfișează ce ocupă spațiul din acest folder"
+
+#. TRANSLATORS: window title, %s is the folder name
+#: thunar-plugin/tdu-window.c:151
+#, c-format
+msgid "Disk Usage — %s"
+msgstr "Utilizarea spațiului pe disc — %s"
