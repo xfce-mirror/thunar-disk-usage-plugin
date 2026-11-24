@@ -1,0 +1,96 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Xfce
+# This file is distributed under the same license as the thunar-plugins.thunar-disk-usage-plugin package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# 
+# Translators:
+# Michal Várady <miko.vaji@gmail.com>, 2026
+# 
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: thunar-plugins.thunar-disk-usage-plugin\n"
+"Report-Msgid-Bugs-To: https://gitlab.xfce.org/\n"
+"POT-Creation-Date: 2026-11-24 11:35+0100\n"
+"PO-Revision-Date: 2026-11-24 10:28+0000\n"
+"Last-Translator: Michal Várady <miko.vaji@gmail.com>, 2026\n"
+"Language-Team: Czech (https://app.transifex.com/xfce/teams/16840/cs/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: cs\n"
+"Plural-Forms: nplurals=4; plural=(n == 1 && n % 1 == 0) ? 0 : (n >= 2 && n <= 4 && n % 1 == 0) ? 1: (n % 1 != 0 ) ? 2 : 3;\n"
+
+#: thunar-plugin/du-chart.c:341
+msgid "_Open Folder"
+msgstr "_Otevřít složku"
+
+#: thunar-plugin/du-chart.c:342
+msgid "_Copy Path to Clipboard"
+msgstr "_Kopírovat cestu do schránky"
+
+#: thunar-plugin/du-chart.c:343
+msgid "Mo_ve to Trash"
+msgstr "Přesu_nout do koše"
+
+#: thunar-plugin/du-chart.c:349
+msgid "Go to _Parent Folder"
+msgstr "_Přejít do nadřazené složky"
+
+#: thunar-plugin/du-chart.c:350
+msgid "Zoom _In"
+msgstr "Při_blížit"
+
+#: thunar-plugin/du-chart.c:351
+msgid "Zoom _Out"
+msgstr "Od_dálit"
+
+#: thunar-plugin/du-view.c:107
+#, c-format
+msgid "Failed to move \"%s\" to the trash"
+msgstr "Nepodařilo se přesunout „%s“ do koše"
+
+#: thunar-plugin/du-view.c:223
+#, c-format
+msgid "%u folder could not be read"
+msgid_plural "%u folders could not be read"
+msgstr[0] "%u složku se nepodařilo přečíst"
+msgstr[1] "%u složky se nepodařilo přečíst"
+msgstr[2] "%u složky se nepodařilo přečíst"
+msgstr[3] "%u složek se nepodařilo přečíst"
+
+#: thunar-plugin/du-view.c:238
+#, c-format
+msgid "Scanning… %s in %s item"
+msgid_plural "Scanning… %s in %s items"
+msgstr[0] "Analýza… %s v %s položce"
+msgstr[1] "Analýza… %s ve %s položkách"
+msgstr[2] "Analýza… %s v %s položkách"
+msgstr[3] "Analýza… %s v %s položkách"
+
+#: thunar-plugin/du-view.c:246
+#, c-format
+msgid "%s in %s item"
+msgid_plural "%s in %s items"
+msgstr[0] "%s v %s položce"
+msgstr[1] "%s ve %s položkách"
+msgstr[2] "%s v %s položkách"
+msgstr[3] "%s v %s položkách"
+
+#: thunar-plugin/tdu-page.c:213
+msgid "Disk Usage"
+msgstr "Využití disku"
+
+#: thunar-plugin/tdu-provider.c:171
+msgid "Show _Disk Usage"
+msgstr "Zobrazit vy_užití disku"
+
+#: thunar-plugin/tdu-provider.c:172
+msgid "Show what takes up the space in this folder"
+msgstr "Zobrazí, co zabírá místo v této složce"
+
+#. TRANSLATORS: window title, %s is the folder name
+#: thunar-plugin/tdu-window.c:151
+#, c-format
+msgid "Disk Usage — %s"
+msgstr "Využití disku — %s"
