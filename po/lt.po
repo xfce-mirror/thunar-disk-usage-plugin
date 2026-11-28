@@ -63,19 +63,19 @@ msgstr[3] "Nepavyko perskaityti %u aplanko"
 #, c-format
 msgid "Scanning… %s in %s item"
 msgid_plural "Scanning… %s in %s items"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "Peržiūrima… %s, esantis %s elemente"
+msgstr[1] "Peržiūrima… %s, esantis %s elementuose"
+msgstr[2] "Peržiūrima… %s, esantis %s elementų"
+msgstr[3] "Peržiūrima… %s, esantis %s elemente"
 
 #: thunar-plugin/du-view.c:246
 #, c-format
 msgid "%s in %s item"
 msgid_plural "%s in %s items"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "%s, esantis %s elemente"
+msgstr[1] "%s, esantis %s elementuose"
+msgstr[2] "%s, esantis %s elementų"
+msgstr[3] "%s, esantis %s elemente"
 
 #: thunar-plugin/tdu-page.c:213
 msgid "Disk Usage"
